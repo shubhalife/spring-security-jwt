@@ -1,6 +1,7 @@
 package com.codingshuttle.youtube.hospitalManagement.entity;
 
 import com.codingshuttle.youtube.hospitalManagement.entity.type.RoleType;
+import com.codingshuttle.youtube.hospitalManagement.security.RolePermissionMapping;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,10 +40,17 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
-        return roles.stream()
-                .map(roleType -> new SimpleGrantedAuthority("ROLE_"+roleType.name()))
-                .collect(Collectors.toSet());
-
+//        return roles.stream()
+//                .map(role -> new SimpleGrantedAuthority("ROLE_"+role.name()))
+//                .collect(Collectors.toSet());
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+        roles.forEach(
+                role -> {
+                    Set<SimpleGrantedAuthority> permissions = RolePermissionMapping.getAuthoritiesForRole(role);
+                    authorities.addAll(permissions);
+                    authorities.add(new SimpleGrantedAuthority("ROLE_"+role.name()));
+                }
+        );
+        return authorities;
     }
 }

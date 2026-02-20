@@ -1,5 +1,6 @@
 package com.codingshuttle.youtube.hospitalManagement.config;
 
+import com.codingshuttle.youtube.hospitalManagement.entity.type.PermissionType;
 import com.codingshuttle.youtube.hospitalManagement.entity.type.RoleType;
 import com.codingshuttle.youtube.hospitalManagement.security.JwtAuthFilter;
 import jakarta.servlet.ServletException;
@@ -8,8 +9,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -26,6 +29,7 @@ import java.io.IOException;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class WebSecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
@@ -42,6 +46,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth->
                         auth.requestMatchers("/public/**", "/auth/**").permitAll()
                                 .requestMatchers("/admin/**").hasRole(RoleType.ADMIN.name())
+                                .requestMatchers(HttpMethod.DELETE,"/admin/**").hasAnyAuthority(PermissionType.APPOINTMENT_DELETE.name())
                                 .requestMatchers("/docters/**").hasAnyRole(RoleType.DOCTOR.name(),RoleType.ADMIN.name())
                                 .anyRequest().authenticated()
                 )
